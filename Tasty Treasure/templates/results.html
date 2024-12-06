@@ -1,0 +1,116 @@
+<!-- results.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasty Treasure</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Recipe Recommendations</h1>
+        {% if recipes %}
+            <div class="recipe-carousel">
+                {% for recipe in recipes %}
+                    <div class="recipe-item" data-index="{{ loop.index0 }}">
+                        <h2>{{ recipe.name }}</h2>
+                        <div class="recipe-section">
+                            <button class="collapsible-btn" onclick="toggleSection(this, 'ingredients-{{loop.index}}')">
+                                Show Ingredients
+                                <span class="icon">+</span>
+                            </button>
+                            <div id="ingredients-{{loop.index}}" class="content">
+                                <p>{{ recipe.ingredients_name }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="recipe-section">
+                            <button class="collapsible-btn" onclick="toggleSection(this, 'instructions-{{loop.index}}')">
+                                Show Instructions
+                                <span class="icon">+</span>
+                            </button>
+                            <div id="instructions-{{loop.index}}" class="content">
+                                <p>{{ recipe.instructions }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if recipe.link %}
+                            <p><a href="{{ recipe.link }}" target="_blank" class="btn">View Full Recipe</a></p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
+                <div class="navigation-controls">
+                    <button class="nav-btn prev-btn" onclick="showPreviousRecipe()">←</button>
+                    <div class="recipe-counter">
+                        Recipe <span id="current-recipe">1</span> of {{ recipes|length }}
+                    </div>
+                    <button class="nav-btn next-btn" onclick="showNextRecipe()">→</button>
+                </div>
+            </div>
+        {% else %}
+            <p>No recipes found with these ingredients. Try different combinations!</p>
+        {% endif %}
+        <a href="/" class="btn search-again-btn">Search New Recipes</a>
+    </div>
+
+    <script>
+        let currentRecipeIndex = 0;
+        const recipes = document.querySelectorAll('.recipe-item');
+        const totalRecipes = recipes.length;
+
+        // Initialize first view
+        showRecipe(0);
+
+        function showRecipe(index) {
+            recipes.forEach(recipe => recipe.style.display = 'none');
+            recipes[index].style.display = 'block';
+            document.getElementById('current-recipe').textContent = index + 1;
+            
+            // Update button states
+            document.querySelector('.prev-btn').disabled = index === 0;
+            document.querySelector('.next-btn').disabled = index === totalRecipes - 1;
+        }
+
+        function showNextRecipe() {
+            if (currentRecipeIndex < totalRecipes - 1) {
+                currentRecipeIndex++;
+                showRecipe(currentRecipeIndex);
+            }
+        }
+
+        function showPreviousRecipe() {
+            if (currentRecipeIndex > 0) {
+                currentRecipeIndex--;
+                showRecipe(currentRecipeIndex);
+            }
+        }
+
+        function toggleSection(button, contentId) {
+            const content = document.getElementById(contentId);
+            const icon = button.querySelector('.icon');
+            
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                button.classList.remove('active');
+                icon.textContent = '+';
+                button.textContent = button.textContent.replace('Hide', 'Show');
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                button.classList.add('active');
+                icon.textContent = '−';
+                button.textContent = button.textContent.replace('Show', 'Hide');
+            }
+            button.appendChild(icon);
+        }
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') showNextRecipe();
+            if (e.key === 'ArrowLeft') showPreviousRecipe();
+        });
+    </script>
+</body>
+</html>
